@@ -1,0 +1,24 @@
+2022-11-03 10:22:56,264 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Configure stats pid to 54584
+2022-11-03 10:22:56,264 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Loading settings from C:\Users\Administrator\.config\wandb\settings
+2022-11-03 10:22:56,264 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Loading settings from D:\Epping_Boys_High_School\Project\Code_Implementation\BERT_multimodal_transformer-master\wandb\settings
+2022-11-03 10:22:56,265 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Loading settings from environment variables: {'_require_service': 'True', 'program': 'multimodal_driver.py'}
+2022-11-03 10:22:56,265 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Inferring run settings from compute environment: {'program_relpath': 'multimodal_driver.py', 'program': 'multimodal_driver.py'}
+2022-11-03 10:22:56,265 INFO    MainThread:54584 [wandb_setup.py:_flush():68] Applying login settings: {'mode': 'offline'}
+2022-11-03 10:22:56,265 INFO    MainThread:54584 [wandb_init.py:_log_setup():476] Logging user logs to D:\Epping_Boys_High_School\Project\Code_Implementation\BERT_multimodal_transformer-master\wandb\offline-run-20221103_102256-1j49ijrv\logs\debug.log
+2022-11-03 10:22:56,266 INFO    MainThread:54584 [wandb_init.py:_log_setup():477] Logging internal logs to D:\Epping_Boys_High_School\Project\Code_Implementation\BERT_multimodal_transformer-master\wandb\offline-run-20221103_102256-1j49ijrv\logs\debug-internal.log
+2022-11-03 10:22:56,267 INFO    MainThread:54584 [wandb_init.py:init():516] calling init triggers
+2022-11-03 10:22:56,267 INFO    MainThread:54584 [wandb_init.py:init():519] wandb.init called with sweep_config: {}
+config: {}
+2022-11-03 10:22:56,267 INFO    MainThread:54584 [wandb_init.py:init():569] starting backend
+2022-11-03 10:22:56,268 INFO    MainThread:54584 [wandb_init.py:init():573] setting up manager
+2022-11-03 10:22:56,273 INFO    MainThread:54584 [backend.py:_multiprocessing_setup():102] multiprocessing start_methods=spawn, using: spawn
+2022-11-03 10:22:56,280 INFO    MainThread:54584 [wandb_init.py:init():580] backend started and connected
+2022-11-03 10:22:56,283 INFO    MainThread:54584 [wandb_init.py:init():658] updated telemetry
+2022-11-03 10:22:56,284 INFO    MainThread:54584 [wandb_init.py:init():728] starting run threads in backend
+2022-11-03 10:22:56,885 INFO    MainThread:54584 [wandb_run.py:_console_start():1980] atexit reg
+2022-11-03 10:22:56,886 INFO    MainThread:54584 [wandb_run.py:_redirect():1838] redirect: SettingsConsole.WRAP_RAW
+2022-11-03 10:22:56,886 INFO    MainThread:54584 [wandb_run.py:_redirect():1903] Wrapping output streams.
+2022-11-03 10:22:56,886 INFO    MainThread:54584 [wandb_run.py:_redirect():1925] Redirects installed.
+2022-11-03 10:22:56,887 INFO    MainThread:54584 [wandb_init.py:init():765] run started, returning control to user process
+2022-11-03 10:22:56,891 INFO    MainThread:54584 [wandb_run.py:_config_callback():1160] config_cb None None {'dataset': 'mosi', 'max_seq_length': 100, 'train_batch_size': 48, 'dev_batch_size': 128, 'test_batch_size': 128, 'n_epochs': 40, 'beta_shift': 1.0, 'dropout_prob': 0.5, 'model': 'bert-base-uncased', 'learning_rate': 1e-05, 'gradient_accumulation_step': 1, 'warmup_proportion': 0.1, 'seed': 9797}
+2022-11-03 10:23:29,283 WARNING MsgRouterThr:54584 [router.py:message_loop():77] message_loop has been closed

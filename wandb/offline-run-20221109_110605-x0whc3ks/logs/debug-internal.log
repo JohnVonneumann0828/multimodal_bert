@@ -1,0 +1,11 @@
+2022-11-09 11:06:05,697 INFO    StreamThr :10988 [internal.py:wandb_internal():88] W&B internal server running at pid: 10988, started at: 2022-11-09 11:06:05.696278
+2022-11-09 11:06:05,699 DEBUG   HandlerThread:10988 [handler.py:handle_request():138] handle_request: status
+2022-11-09 11:06:05,700 DEBUG   SenderThread:10988 [sender.py:send_request():317] send_request: status
+2022-11-09 11:06:05,702 INFO    WriterThread:10988 [datastore.py:open_for_write():75] open: D:\Epping_Boys_High_School\Project\Code_Implementation\BERT_multimodal_transformer-master\wandb\offline-run-20221109_110605-x0whc3ks\run-x0whc3ks.wandb
+2022-11-09 11:06:05,709 DEBUG   HandlerThread:10988 [handler.py:handle_request():138] handle_request: run_start
+2022-11-09 11:06:06,239 DEBUG   HandlerThread:10988 [meta.py:__init__():34] meta init
+2022-11-09 11:06:06,239 DEBUG   HandlerThread:10988 [meta.py:__init__():49] meta init done
+2022-11-09 11:06:06,239 DEBUG   HandlerThread:10988 [meta.py:probe():215] probe
+2022-11-09 11:06:06,249 DEBUG   HandlerThread:10988 [meta.py:_save_pip():53] save pip
+2022-11-09 11:06:06,250 DEBUG   HandlerThread:10988 [meta.py:_save_pip():67] save pip done
+2022-11-09 11:06:06,251 DEBUG   HandlerThread:10988 [meta.py:probe():253] probe done

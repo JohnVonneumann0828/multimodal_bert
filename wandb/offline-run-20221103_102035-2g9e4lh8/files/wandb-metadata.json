@@ -1,0 +1,21 @@
+{
+    "os": "Windows-10-10.0.18363-SP0",
+    "python": "3.10.4",
+    "heartbeatAt": "2022-11-02T23:20:36.530020",
+    "startedAt": "2022-11-02T23:20:35.912557",
+    "docker": null,
+    "gpu": "NVIDIA GeForce MX150",
+    "gpu_count": 1,
+    "cpu_count": 8,
+    "cuda": null,
+    "args": [
+        "--model",
+        "bert-base-uncased"
+    ],
+    "state": "running",
+    "program": "multimodal_driver.py",
+    "codePath": "multimodal_driver.py",
+    "host": "DESKTOP-8DEAV91",
+    "username": "Administrator",
+    "executable": "A:\\pythonf\\python.exe"
+}
