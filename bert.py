@@ -12,7 +12,7 @@ from torch.nn import CrossEntropyLoss, MSELoss
 
 from transformers.models.bert.modeling_bert import BertPreTrainedModel
 from transformers.activations import gelu, gelu_new
-from transformers.configuration_bert import BertConfig
+from configuration_bert import BertConfig
 
 from transformers.models.bert.modeling_bert import BertEmbeddings, BertEncoder, BertPooler
 from transformers.modeling_utils import (
