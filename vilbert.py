@@ -20,7 +20,7 @@ from torch.nn import CrossEntropyLoss
 import torch.nn.functional as F
 from torch.nn.utils.weight_norm import weight_norm
 
-from .utils import PreTrainedModel
+from utils import PreTrainedModel
 import pdb
 
 logger = logging.getLogger(__name__)
@@ -770,6 +770,9 @@ class BertBiAttention(nn.Module):
         # Take the dot product between "query2" and "key1" to get the raw attention scores for value 1.
         attention_scores1 = torch.matmul(query_layer2, key_layer1.transpose(-1, -2))
         attention_scores1 = attention_scores1 / math.sqrt(self.attention_head_size)
+        print(attention_scores1.size())
+        print(attention_mask1.size())
+        print(self.all_head_size)
         attention_scores1 = attention_scores1 + attention_mask1
         # if use_co_attention_mask:
         # attention_scores1 = attention_scores1 + co_attention_mask.permute(0,1,3,2)
@@ -1325,11 +1328,12 @@ class BertModel(BertPreTrainedModel):
         if image_attention_mask is None:
             image_attention_mask = torch.ones(
                 input_imgs.size(1)
-            ).type_as(input_txt)
+            ).type_as(input_aud)
+            print(input_imgs.size)
 
         if self.task_specific_tokens:
             # extend the mask
-            mask_tokens = input_txt.new().resize_(input_txt.size(0), 1).fill_(1)
+            mask_tokens = input_aud.new().resize_(input_txt.size(0), 1).fill_(1)
             attention_mask = torch.cat([mask_tokens, attention_mask], dim=1)
 
         # We create a 3D attention mask from a 2D tensor mask.
@@ -1338,8 +1342,8 @@ class BertModel(BertPreTrainedModel):
         # this attention mask is more simple than the triangular masking of causal attention
         # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
         extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
-        extended_image_attention_mask = image_attention_mask.unsqueeze(1).unsqueeze(2)
-
+        extended_image_attention_mask = image_attention_mask.unsqueeze(0).unsqueeze(0)
+        
         extended_attention_mask2 = attention_mask.unsqueeze(2)
         # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
         # masked positions, this operation will create a tensor which is 0.0 for
@@ -1376,7 +1380,7 @@ class BertModel(BertPreTrainedModel):
         #embedding_output = self.embeddings(input_txt, token_type_ids, task_ids)
         #v_embedding_output = self.v_embeddings(input_imgs, image_loc)
         embedding_output=input_aud
-        v_embedding_ouutput=input_imgs
+        v_embedding_output=input_imgs
         encoded_layers_t, encoded_layers_v, all_attention_mask = self.encoder(
             embedding_output,
             v_embedding_output,
@@ -1480,10 +1484,11 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
         next_sentence_label=None,
         output_all_attention_masks=False,
     ):
+        print(input_imgs.size())
         # in this model, we first embed the images.
         sequence_output_t, sequence_output_v, pooled_output_t, pooled_output_v, all_attention_mask = self.bert(
             input_ids,
-            input_imgs
+            input_imgs,
             token_type_ids,
             attention_mask,
             image_attention_mask,
@@ -1501,6 +1506,7 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
             and image_target is not None
         ):
             prediction_scores_v = prediction_scores_v[:, 1:]
+            self.visual_target=-1
             if self.visual_target == 1:
                 img_loss = self.vis_criterion(prediction_scores_v, image_target)
                 masked_img_loss = torch.sum(
