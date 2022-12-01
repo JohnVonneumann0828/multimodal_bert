@@ -36,7 +36,7 @@ from vilbert import BertForMultiModalPreTraining, BertConfig
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str,
                     choices=["mosi", "mosei"], default="mosi")
-parser.add_argument("--max_seq_length", type=int, default=100)
+parser.add_argument("--max_seq_length", type=int, default=200)
 parser.add_argument("--train_batch_size", type=int, default=1)
 parser.add_argument("--dev_batch_size", type=int, default=1)
 parser.add_argument("--test_batch_size", type=int, default=1)
@@ -85,19 +85,21 @@ def convert_to_features(examples, max_seq_length, tokenizer):
 
     for (ex_index, example) in enumerate(examples):
 
-        a=example
+        a,segment_ids,label_id,index=example
         words=a[0]
         visual=a[1]
-        acoustic=[a[2] for i in range(len(words))]
+        acoustic=a[2]
 
-        #label_id=[list(a) for a in example[1]]
-        #label_id=list(map(list, zip(*label_id)))
-        #label_id=[sum(a)/len(a) for a in label_id]
+        label_id=[list(a) for a in example[1]]
+        label_id=list(map(list, zip(*label_id)))
+        label_id=[sum(a)/len(a) for a in label_id]
         one=[-1,-0.67,-0.33,0,0.33,0.67,1]
         #label_id=one[label_id.index(max(label_id))]
         #label_id=list(map(list, zip(*label_id)))
+        label_id=label_id[0]
         #print(len(label_id))
         tokens, inversions = [], []
+        print(len(words))
         for idx, word in enumerate(words):
             word=word.decode("utf-8")          
             tokenized = tokenizer.tokenize(word)
@@ -160,7 +162,7 @@ def prepare_bert_input(tokens, visual, acoustic, tokenizer):
     CLS = tokenizer.cls_token
     SEP = tokenizer.sep_token
     tokens = [CLS] + tokens + [SEP]
-
+    print(len(acoustic))
     # Pad zero vectors for acoustic / visual vectors to account for [CLS] / [SEP] tokens
     acoustic_zero = np.zeros((1, ACOUSTIC_DIM))
     acoustic = np.concatenate((acoustic_zero, acoustic, acoustic_zero))
@@ -263,7 +265,7 @@ def get_appropriate_dataset(data):
 
 
 def set_up_data_loader():
-    with open("e:\\Project\\500-1500.pkl", "rb") as handle:
+    with open("/content/gdrive/MyDrive/Prepared_dataset/1000-2000.pkl", "rb") as handle:
         data = pickle.load(handle)
 
     train_data = data["train"]
@@ -376,13 +378,13 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
         input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
         visual = torch.squeeze(visual, 1)
         acoustic = torch.squeeze(acoustic, 1)
+        print(visual.size())
         outputs = model(
-            input_ids,
-            visual,
             acoustic,
+            visual,
             token_type_ids=segment_ids,
             attention_mask=input_mask,
-            labels=None,
+            #labels=None,
         )
         logits = outputs[0]
         loss_fct = MSELoss()
@@ -413,7 +415,7 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
         for step, batch in enumerate(tqdm(dev_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
 
-            input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
+            input_ids, visual, acoustic, input_mask, segment_ids, label_ids,index = batch
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
@@ -565,7 +567,7 @@ def main():
 
     model, optimizer, scheduler = prep_for_training(
         num_train_optimization_steps)
-    config = BertConfig.from_json_file("D:\Epping_Boys_High_School\Project\Code_Implementation\BERT_multimodal_transformer-master\config\bert_base_2layer_2conect.json")
+    config = BertConfig.from_json_file("/content/multimodal_bert/config/bert_base_2layer_2conect.json")
     model=BertForMultiModalPreTraining(config)
     train(
         model,
