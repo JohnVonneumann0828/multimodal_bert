@@ -86,74 +86,76 @@ def convert_to_features(examples, max_seq_length, tokenizer):
     for (ex_index, example) in enumerate(examples):
 
         a,segment_ids,label_id,index=example
-        words=a[0]
-        visual=a[1]
-        acoustic=a[2]
-
-        label_id=[list(a) for a in example[1]]
-        label_id=list(map(list, zip(*label_id)))
-        label_id=[sum(a)/len(a) for a in label_id]
-        one=[-1,-0.67,-0.33,0,0.33,0.67,1]
+        last=0
+        for i in index:
+          words=a[last:i]
+          visual=a[last:i]
+          acoustic=a[last:i]
+          last=i
+          label_id=[list(a) for a in example[1]]
+          label_id=list(map(list, zip(*label_id)))
+          label_id=[sum(a)/len(a) for a in label_id]
+          one=[-1,-0.67,-0.33,0,0.33,0.67,1]
         #label_id=one[label_id.index(max(label_id))]
         #label_id=list(map(list, zip(*label_id)))
-        label_id=label_id[0]
-        #print(len(label_id))
-        tokens, inversions = [], []
-        print(len(words))
-        for idx, word in enumerate(words):
-            word=word.decode("utf-8")          
-            tokenized = tokenizer.tokenize(word)
-            tokens.extend(tokenized)
-            inversions.extend([idx] * len(tokenized))
+          label_id=label_id[0]
+          #print(len(label_id))
+          tokens, inversions = [], []
+          print(len(words))
+          for idx, word in enumerate(words):
+              word=word.decode("utf-8")          
+              tokenized = tokenizer.tokenize(word)
+              tokens.extend(tokenized)
+              inversions.extend([idx] * len(tokenized))
 
         # Check inversion
-        assert len(tokens) == len(inversions)
+          assert len(tokens) == len(inversions)
+  
+          aligned_visual = []
+          aligned_audio = []
+          #print(type(visual))
+          #print(len(acoustic))
+          acoustic=np.array(acoustic)
+          #print(acoustic)
+          for inv_idx in inversions:
+              #print(inv_idx)
+              aligned_visual.append(visual[inv_idx, :])
+              aligned_audio.append(acoustic[inv_idx, :])
 
-        aligned_visual = []
-        aligned_audio = []
-        #print(type(visual))
-        #print(len(acoustic))
-        acoustic=np.array(acoustic)
-        #print(acoustic)
-        for inv_idx in inversions:
-            #print(inv_idx)
-            aligned_visual.append(visual[inv_idx, :])
-            aligned_audio.append(acoustic[inv_idx, :])
-
-        visual = np.array(aligned_visual)
-        acoustic = np.array(aligned_audio)
+          visual = np.array(aligned_visual)
+          acoustic = np.array(aligned_audio)
 
         # Truncate input if necessary
-        if len(tokens) > max_seq_length - 2:
-            tokens = tokens[: max_seq_length - 2]
-            acoustic = acoustic[: max_seq_length - 2]
-            visual = visual[: max_seq_length - 2]
+          if len(tokens) > max_seq_length - 2:
+              tokens = tokens[: max_seq_length - 2]
+              acoustic = acoustic[: max_seq_length - 2]
+              visual = visual[: max_seq_length - 2]
 
-        if args.model == "bert-base-uncased":
-            prepare_input = prepare_bert_input
-        elif args.model == "xlnet-base-cased":
-            prepare_input = prepare_xlnet_input
+          if args.model == "bert-base-uncased":
+              prepare_input = prepare_bert_input
+          elif args.model == "xlnet-base-cased":
+              prepare_input = prepare_xlnet_input
 
-        input_ids, visual, acoustic, input_mask, segment_ids = prepare_input(
-            tokens, visual, acoustic, tokenizer
-        )
+          input_ids, visual, acoustic, input_mask, segment_ids = prepare_input(
+              tokens, visual, acoustic, tokenizer
+          )
 
         # Check input length
-        assert len(input_ids) == args.max_seq_length
-        assert len(input_mask) == args.max_seq_length
-        assert len(segment_ids) == args.max_seq_length
-        assert acoustic.shape[0] == args.max_seq_length
-        assert visual.shape[0] == args.max_seq_length
+          assert len(input_ids) == args.max_seq_length
+          assert len(input_mask) == args.max_seq_length
+          assert len(segment_ids) == args.max_seq_length
+          assert acoustic.shape[0] == args.max_seq_length
+          assert visual.shape[0] == args.max_seq_length
 
-        features.append(
-            InputFeatures(
-                input_ids=input_ids,
-                input_mask=input_mask,
-                segment_ids=segment_ids,
-                visual=visual,
-                acoustic=acoustic,
-                label_id=[0],
-            )
+          features.append(
+              InputFeatures(
+                  input_ids=input_ids,
+                  input_mask=input_mask,
+                  segment_ids=segment_ids,
+                  visual=visual,
+                  acoustic=acoustic,
+                  label_id=[0],
+              )
         )
     return features
 
