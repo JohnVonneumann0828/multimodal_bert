@@ -88,9 +88,9 @@ def convert_to_features(examples, max_seq_length, tokenizer):
         a,segment_ids,label_id,index=example
         last=0
         for i in index:
-          words=a[last:i]
-          visual=a[last:i]
-          acoustic=a[last:i]
+          words=a[0][last:i]
+          visual=a[1][last:i]
+          acoustic=a[2][last:i]
           last=i
           label_id=[list(a) for a in example[1]]
           label_id=list(map(list, zip(*label_id)))
