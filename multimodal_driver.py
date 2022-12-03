@@ -397,6 +397,7 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
             attention_mask=input_mask,
             #labels=None,
         )
+        outputs[0]=(outputs[0]+outputs[1])/2
         logits = outputs[0]
         loss_fct = MSELoss()
         #print(label_ids)
@@ -425,18 +426,17 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
     with torch.no_grad():
         for step, batch in enumerate(tqdm(dev_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
-
             input_ids, visual, acoustic, input_mask, segment_ids, label_ids= batch
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
-                input_ids,
-                visual,
                 acoustic,
+                visual,
                 token_type_ids=segment_ids,
                 attention_mask=input_mask,
-                labels=None,
+            #labels=None,
             )
+            outputs[0]=(outputs[0]+outputs[1])/2
             logits = outputs[0]
 
             loss_fct = MSELoss()
@@ -464,14 +464,13 @@ def test_epoch(model: nn.Module, test_dataloader: DataLoader):
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
-                input_ids,
                 visual,
                 acoustic,
                 token_type_ids=segment_ids,
                 attention_mask=input_mask,
-                labels=None,
+                #labels=None,
             )
-
+            outputs[0]=(outputs[0]+outputs[1])/2
             logits = outputs[0]
 
             logits = logits.detach().cpu().numpy()
