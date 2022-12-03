@@ -37,7 +37,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str,
                     choices=["mosi", "mosei"], default="mosi")
 parser.add_argument("--max_seq_length", type=int, default=200)
-parser.add_argument("--train_batch_size", type=int, default=1)
+parser.add_argument("--train_batch_size", type=int, default=48)
 parser.add_argument("--dev_batch_size", type=int, default=1)
 parser.add_argument("--test_batch_size", type=int, default=1)
 parser.add_argument("--n_epochs", type=int, default=40)
@@ -87,21 +87,30 @@ def convert_to_features(examples, max_seq_length, tokenizer):
 
         a,segment_ids,label_id,index=example
         last=0
+        label_id2=[list(a) for a in example[1]]
+        rear=0
         for i in index:
+          #last=0
+          #print("Sheeesh")
+          #print(i)
           words=a[0][last:i]
           visual=a[1][last:i]
           acoustic=a[2][last:i]
+          #print(len(visual))
+          if(len(words)==0 or len(visual)==0 or len(acoustic)==0):
+            break
           last=i
-          label_id=[list(a) for a in example[1]]
-          label_id=list(map(list, zip(*label_id)))
-          label_id=[sum(a)/len(a) for a in label_id]
+          label_id=label_id2[rear]
+          #label_id=list(map(list, zip(*label_id)))
+          #label_id=[sum(a)/len(a) for a in label_id]
           one=[-1,-0.67,-0.33,0,0.33,0.67,1]
         #label_id=one[label_id.index(max(label_id))]
         #label_id=list(map(list, zip(*label_id)))
           label_id=label_id[0]
           #print(len(label_id))
           tokens, inversions = [], []
-          print(len(words))
+          #print(len(acoustic))
+          rear=rear+1
           for idx, word in enumerate(words):
               word=word.decode("utf-8")          
               tokenized = tokenizer.tokenize(word)
@@ -164,7 +173,7 @@ def prepare_bert_input(tokens, visual, acoustic, tokenizer):
     CLS = tokenizer.cls_token
     SEP = tokenizer.sep_token
     tokens = [CLS] + tokens + [SEP]
-    print(len(acoustic))
+    #print(len(acoustic))
     # Pad zero vectors for acoustic / visual vectors to account for [CLS] / [SEP] tokens
     acoustic_zero = np.zeros((1, ACOUSTIC_DIM))
     acoustic = np.concatenate((acoustic_zero, acoustic, acoustic_zero))
@@ -417,7 +426,7 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
         for step, batch in enumerate(tqdm(dev_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
 
-            input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
+            input_ids, visual, acoustic, input_mask, segment_ids, label_ids= batch
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
