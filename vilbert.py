@@ -1179,23 +1179,17 @@ class BertImgPredictionHeadTransform(nn.Module):
 
 
 class BertLMPredictionHead(nn.Module):
-    def __init__(self, config, bert_model_embedding_weights):
-        super(BertLMPredictionHead, self).__init__()
-        self.transform = BertPredictionHeadTransform(config)
+    def __init__(self, config):
+        super(BertImagePredictionHead, self).__init__()
+        self.transform = BertImgPredictionHeadTransform(config)
 
         # The output weights are the same as the input embeddings, but there is
         # an output-only bias for each token.
-        self.decoder = nn.Linear(
-            bert_model_embedding_weights.size(1),
-            bert_model_embedding_weights.size(0),
-            bias=False,
-        )
-        self.decoder.weight = bert_model_embedding_weights
-        self.bias = nn.Parameter(torch.zeros(bert_model_embedding_weights.size(0)))
+        self.decoder = nn.Linear(config.intermediate_size, config.vocab_size)
 
     def forward(self, hidden_states):
         hidden_states = self.transform(hidden_states)
-        hidden_states = self.decoder(hidden_states) + self.bias
+        hidden_states = self.decoder(hidden_states)
         return hidden_states
 
 
@@ -1495,6 +1489,15 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
             output_all_encoded_layers=False,
             output_all_attention_masks=output_all_attention_masks,
         )
+        vision_logit = self.vision_logit(self.dropout(sequence_output_v)) + (
+            (1.0 - image_attention_mask) * -10000.0
+        ).unsqueeze(2).to(dtype=next(self.parameters()).dtype)
+        linguisic_logit = self.linguisic_logit(self.dropout(sequence_output_t))
+        return (
+            vision_logit,
+            linguistic_logit,
+            all_attention_mask
+        )
 
         prediction_scores_t, prediction_scores_v, seq_relationship_score = self.cls(
             sequence_output_t, sequence_output_v, pooled_output_t, pooled_output_v
@@ -1684,28 +1687,21 @@ class VILBertForVLTasks(BertPreTrainedModel):
         else:
             assert False
 
-        vil_prediction = self.vil_prediction(pooled_output)
-        vil_prediction_gqa = self.vil_prediction_gqa(pooled_output)
-        if pooled_output.size(0) % 2 == 0:
-            vil_binary_prediction = self.vil_binary_prediction(
-                pooled_output.view(-1, pooled_output.size(1) * 2)
-            )
-        vil_logit = self.vil_logit(pooled_output)
-        vil_tri_prediction = self.vil_tri_prediction(pooled_output)
+        #vil_prediction = self.vil_prediction(pooled_output)
+        #vil_prediction_gqa = self.vil_prediction_gqa(pooled_output)
+        #if pooled_output.size(0) % 2 == 0:
+        #    vil_binary_prediction = self.vil_binary_prediction(
+        #        pooled_output.view(-1, pooled_output.size(1) * 2)
+        #    )
+        #vil_logit = self.vil_logit(pooled_output)
+        #vil_tri_prediction = self.vil_tri_prediction(pooled_output)
         vision_logit = self.vision_logit(self.dropout(sequence_output_v)) + (
             (1.0 - image_attention_mask) * -10000.0
         ).unsqueeze(2).to(dtype=next(self.parameters()).dtype)
         linguisic_logit = self.linguisic_logit(self.dropout(sequence_output_t))
 
         return (
-            vil_prediction,
-            vil_prediction_gqa,
-            vil_logit,
-            vil_binary_prediction,
-            vil_tri_prediction,
-            vision_prediction,
             vision_logit,
-            linguisic_prediction,
             linguisic_logit,
             all_attention_mask,
         )
