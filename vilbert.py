@@ -770,9 +770,9 @@ class BertBiAttention(nn.Module):
         # Take the dot product between "query2" and "key1" to get the raw attention scores for value 1.
         attention_scores1 = torch.matmul(query_layer2, key_layer1.transpose(-1, -2))
         attention_scores1 = attention_scores1 / math.sqrt(self.attention_head_size)
-        print(attention_scores1.size())
-        print(attention_mask1.size())
-        print(self.all_head_size)
+        #print(attention_scores1.size())
+        #print(attention_mask1.size())
+        #print(self.all_head_size)
         attention_scores1 = attention_scores1 + attention_mask1
         # if use_co_attention_mask:
         # attention_scores1 = attention_scores1 + co_attention_mask.permute(0,1,3,2)
