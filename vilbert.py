@@ -185,7 +185,6 @@ class BertConfig(object):
     ):
 
         """Constructs BertConfig.
-
         Args:
             vocab_size_or_config_json_file: Vocabulary size of `inputs_ids` in `BertModel`.
             hidden_size: Size of the encoder layers and the pooler layer.
@@ -1216,7 +1215,7 @@ class BertOnlyNSPHead(nn.Module):
 class BertPreTrainingHeads(nn.Module):
     def __init__(self, config, bert_model_embedding_weights):
         super(BertPreTrainingHeads, self).__init__()
-        self.predictions = BertLMPredictionHead(config, bert_model_embedding_weights)
+        self.predictions = BertLMPredictionHead(config)
         self.bi_seq_relationship = nn.Linear(config.bi_hidden_size, 2)
         self.imagePredictions = BertImagePredictionHead(config)
         self.fusion_method = config.fusion_method
@@ -1446,7 +1445,11 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
         self.num_negative = config.num_negative
         self.loss_fct = CrossEntropyLoss(ignore_index=-1)
 
+        self.vision_logit = nn.Linear(config.v_hidden_size, 1)
+        self.linguisic_logit = nn.Linear(config.hidden_size, 1)
         print("model's visual target is ", config.visual_target)
+        dropout_prob=0.5
+        self.dropout = nn.Dropout(dropout_prob)
 
         if self.visual_target == 0:
             self.vis_criterion = nn.KLDivLoss(reduction="none")
@@ -1489,15 +1492,14 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
             output_all_encoded_layers=False,
             output_all_attention_masks=output_all_attention_masks,
         )
-        vision_logit = self.vision_logit(self.dropout(sequence_output_v)) + (
-            (1.0 - image_attention_mask) * -10000.0
-        ).unsqueeze(2).to(dtype=next(self.parameters()).dtype)
-        linguisic_logit = self.linguisic_logit(self.dropout(sequence_output_t))
-        return (
+        vision_logit = self.vision_logit(self.dropout(sequence_output_v))
+        #.unsqueeze(2).to(dtype=next(self.parameters()).dtype)
+        linguistic_logit = self.linguisic_logit(self.dropout(sequence_output_t))
+        return [
             vision_logit,
             linguistic_logit,
             all_attention_mask
-        )
+        ]
 
         prediction_scores_t, prediction_scores_v, seq_relationship_score = self.cls(
             sequence_output_t, sequence_output_v, pooled_output_t, pooled_output_v
