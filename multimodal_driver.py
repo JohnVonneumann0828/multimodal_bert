@@ -397,6 +397,8 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
             attention_mask=input_mask,
             #labels=None,
         )
+        print(outputs[0].size())
+        print(outputs[1].size())
         outputs[0]=(outputs[0]+outputs[1])/2
         logits = outputs[0]
         loss_fct = MSELoss()
@@ -423,6 +425,8 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
     model.eval()
     dev_loss = 0
     nb_dev_examples, nb_dev_steps = 0, 0
+    preds=[]
+    labels=[]
     with torch.no_grad():
         for step, batch in enumerate(tqdm(dev_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
@@ -438,6 +442,10 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
             )
             outputs[0]=(outputs[0]+outputs[1])/2
             logits = outputs[0]
+            outputs[0]=(outputs[0]+outputs[1])/2
+            logits = outputs[0]
+
+
 
             loss_fct = MSELoss()
             loss = loss_fct(logits.view(-1), label_ids.view(-1))
@@ -457,20 +465,22 @@ def test_epoch(model: nn.Module, test_dataloader: DataLoader):
     labels = []
 
     with torch.no_grad():
-        for batch in tqdm(test_dataloader):
+        for step, batch in enumerate(tqdm(test_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
 
             input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
-                visual,
                 acoustic,
+                visual,
                 token_type_ids=segment_ids,
                 attention_mask=input_mask,
                 #labels=None,
             )
             outputs[0]=(outputs[0]+outputs[1])/2
+            outputs[0]=outputs[0].squeeze(0)
+            outputs[0]=torch.mean(outputs[0])
             logits = outputs[0]
 
             logits = logits.detach().cpu().numpy()
@@ -478,7 +488,8 @@ def test_epoch(model: nn.Module, test_dataloader: DataLoader):
 
             logits = np.squeeze(logits).tolist()
             label_ids = np.squeeze(label_ids).tolist()
-
+            print(label_ids)
+            print(logits)
             preds.extend(logits)
             labels.extend(label_ids)
 
@@ -521,7 +532,10 @@ def train(
     test_accuracies = []
 
     #model.load_state_dict(torch.load("e:\\Project\\model.pth")["model_state_dict"])
-
+    #test_acc, test_mae, test_corr, test_f_score = test_score_model(
+    #      model, test_data_loader
+    #)
+    valid_loss=test_epoch(model,test_data_loader)
     for epoch_i in range(int(args.n_epochs)):
         train_loss = train_epoch(model, train_dataloader, optimizer, scheduler)
         valid_loss = eval_epoch(model, validation_dataloader, optimizer)
@@ -536,7 +550,7 @@ def train(
         )
                 # Additional information
         EPOCH = epoch_i
-        PATH = "e:\\model.pth"
+        PATH = "/content/gdrive/MyDrive/MAG_Model_Result"
         LOSS = valid_loss
         torch.save({
             'epoch': EPOCH,
@@ -579,6 +593,7 @@ def main():
         num_train_optimization_steps)
     config = BertConfig.from_json_file("/content/multimodal_bert/config/bert_base_2layer_2conect.json")
     model=BertForMultiModalPreTraining(config)
+    model.to(DEVICE)
     train(
         model,
         train_data_loader,
