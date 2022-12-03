@@ -89,6 +89,7 @@ def convert_to_features(examples, max_seq_length, tokenizer):
         last=0
         label_id2=[list(a) for a in example[1]]
         rear=0
+        #print(label_id2)
         for i in index:
           #last=0
           #print("Sheeesh")
@@ -107,6 +108,7 @@ def convert_to_features(examples, max_seq_length, tokenizer):
         #label_id=one[label_id.index(max(label_id))]
         #label_id=list(map(list, zip(*label_id)))
           label_id=label_id[0]
+          #print(label_id)
           #print(len(label_id))
           tokens, inversions = [], []
           #print(len(acoustic))
@@ -163,7 +165,7 @@ def convert_to_features(examples, max_seq_length, tokenizer):
                   segment_ids=segment_ids,
                   visual=visual,
                   acoustic=acoustic,
-                  label_id=[0],
+                  label_id=label_id,
               )
         )
     return features
@@ -400,6 +402,8 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
         print(outputs[0].size())
         print(outputs[1].size())
         outputs[0]=(outputs[0]+outputs[1])/2
+        outputs[0]=outputs[0].squeeze(0)
+        outputs[0]=torch.mean(outputs[0])
         logits = outputs[0]
         loss_fct = MSELoss()
         #print(label_ids)
@@ -441,8 +445,8 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
             #labels=None,
             )
             outputs[0]=(outputs[0]+outputs[1])/2
-            logits = outputs[0]
-            outputs[0]=(outputs[0]+outputs[1])/2
+            outputs[0]=outputs[0].squeeze(0)
+            outputs[0]=torch.mean(outputs[0])
             logits = outputs[0]
 
 
@@ -488,10 +492,10 @@ def test_epoch(model: nn.Module, test_dataloader: DataLoader):
 
             logits = np.squeeze(logits).tolist()
             label_ids = np.squeeze(label_ids).tolist()
-            print(label_ids)
-            print(logits)
-            preds.extend(logits)
-            labels.extend(label_ids)
+            #print(label_ids)
+            #print(logits)
+            preds.append(logits)
+            labels.append(label_ids)
 
         preds = np.array(preds)
         labels = np.array(labels)
@@ -502,9 +506,12 @@ def test_epoch(model: nn.Module, test_dataloader: DataLoader):
 def test_score_model(model: nn.Module, test_dataloader: DataLoader, use_zero=False):
 
     preds, y_test = test_epoch(model, test_dataloader)
+    print(y_test)
     non_zeros = np.array(
         [i for i, e in enumerate(y_test) if e != 0 or use_zero])
-
+    print(non_zeros)
+    preds=np.array(preds)
+    y_test=np.array(y_test)
     preds = preds[non_zeros]
     y_test = y_test[non_zeros]
 
@@ -532,10 +539,10 @@ def train(
     test_accuracies = []
 
     #model.load_state_dict(torch.load("e:\\Project\\model.pth")["model_state_dict"])
-    #test_acc, test_mae, test_corr, test_f_score = test_score_model(
-    #      model, test_data_loader
-    #)
-    valid_loss=test_epoch(model,test_data_loader)
+    test_acc, test_mae, test_corr, test_f_score = test_score_model(
+          model, test_data_loader
+    )
+    #valid_loss=eval_epoch(model,test_data_loader,optimizer)
     for epoch_i in range(int(args.n_epochs)):
         train_loss = train_epoch(model, train_dataloader, optimizer, scheduler)
         valid_loss = eval_epoch(model, validation_dataloader, optimizer)
