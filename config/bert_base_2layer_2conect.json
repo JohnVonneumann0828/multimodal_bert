@@ -9,7 +9,7 @@
   "num_attention_heads": 2,
   "num_hidden_layers": 2,
   "type_vocab_size": 2,
-  "vocab_size": 30522,
+  "vocab_size": 74,
   "v_feature_size": 34,
   "v_target_size": 34,
   "v_hidden_size": 34,
