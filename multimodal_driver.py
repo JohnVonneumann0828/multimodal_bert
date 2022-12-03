@@ -37,7 +37,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str,
                     choices=["mosi", "mosei"], default="mosi")
 parser.add_argument("--max_seq_length", type=int, default=200)
-parser.add_argument("--train_batch_size", type=int, default=48)
+parser.add_argument("--train_batch_size", type=int, default=1)
 parser.add_argument("--dev_batch_size", type=int, default=1)
 parser.add_argument("--test_batch_size", type=int, default=1)
 parser.add_argument("--n_epochs", type=int, default=40)
