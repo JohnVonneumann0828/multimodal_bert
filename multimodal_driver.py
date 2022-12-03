@@ -417,7 +417,7 @@ def eval_epoch(model: nn.Module, dev_dataloader: DataLoader, optimizer):
         for step, batch in enumerate(tqdm(dev_dataloader, desc="Iteration")):
             batch = tuple(t.to(DEVICE) for t in batch)
 
-            input_ids, visual, acoustic, input_mask, segment_ids, label_ids,index = batch
+            input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
             visual = torch.squeeze(visual, 1)
             acoustic = torch.squeeze(acoustic, 1)
             outputs = model(
