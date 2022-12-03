@@ -1180,7 +1180,7 @@ class BertImgPredictionHeadTransform(nn.Module):
 
 class BertLMPredictionHead(nn.Module):
     def __init__(self, config):
-        super(BertImagePredictionHead, self).__init__()
+        super(BertLMPredictionHead, self).__init__()
         self.transform = BertImgPredictionHeadTransform(config)
 
         # The output weights are the same as the input embeddings, but there is
