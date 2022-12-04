@@ -391,7 +391,7 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
         input_ids, visual, acoustic, input_mask, segment_ids, label_ids = batch
         visual = torch.squeeze(visual, 1)
         acoustic = torch.squeeze(acoustic, 1)
-        print(visual.size())
+        #print(visual.size())
         outputs = model(
             acoustic,
             visual,
@@ -399,8 +399,8 @@ def train_epoch(model: nn.Module, train_dataloader: DataLoader, optimizer, sched
             attention_mask=input_mask,
             #labels=None,
         )
-        print(outputs[0].size())
-        print(outputs[1].size())
+        #print(outputs[0].size())
+        #print(outputs[1].size())
         outputs[0]=(outputs[0]+outputs[1])/2
         outputs[0]=outputs[0].squeeze(0)
         outputs[0]=torch.mean(outputs[0])
@@ -539,9 +539,10 @@ def train(
     test_accuracies = []
 
     #model.load_state_dict(torch.load("e:\\Project\\model.pth")["model_state_dict"])
-    test_acc, test_mae, test_corr, test_f_score = test_score_model(
-          model, test_data_loader
-    )
+    #test_acc, test_mae, test_corr, test_f_score = test_score_model(
+    #      model, test_data_loader
+    #)
+    
     #valid_loss=eval_epoch(model,test_data_loader,optimizer)
     for epoch_i in range(int(args.n_epochs)):
         train_loss = train_epoch(model, train_dataloader, optimizer, scheduler)
@@ -557,7 +558,7 @@ def train(
         )
                 # Additional information
         EPOCH = epoch_i
-        PATH = "/content/gdrive/MyDrive/MAG_Model_Result"
+        PATH = "/content/gdrive/MyDrive/MAG_Model_Result/model_2022_12_3.pth"
         LOSS = valid_loss
         torch.save({
             'epoch': EPOCH,
@@ -600,6 +601,7 @@ def main():
         num_train_optimization_steps)
     config = BertConfig.from_json_file("/content/multimodal_bert/config/bert_base_2layer_2conect.json")
     model=BertForMultiModalPreTraining(config)
+    #model.load_state_dict(torch.load("/content/gdrive/MyDrive/MAG_Model_Result/model_2022_12_3.pth")["model_state_dict"])
     model.to(DEVICE)
     train(
         model,
