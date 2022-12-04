@@ -1322,7 +1322,7 @@ class BertModel(BertPreTrainedModel):
             image_attention_mask = torch.ones(
                 input_imgs.size(1)
             ).type_as(input_aud)
-            print(input_imgs.size)
+            #print(input_imgs.size)
 
         if self.task_specific_tokens:
             # extend the mask
@@ -1481,7 +1481,7 @@ class BertForMultiModalPreTraining(BertPreTrainedModel):
         next_sentence_label=None,
         output_all_attention_masks=False,
     ):
-        print(input_imgs.size())
+        #print(input_imgs.size())
         # in this model, we first embed the images.
         sequence_output_t, sequence_output_v, pooled_output_t, pooled_output_v, all_attention_mask = self.bert(
             input_ids,
